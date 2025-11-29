@@ -52,6 +52,9 @@ export interface AnnotationConfig {
   y: number;
   text: string;
   color?: string;
+  showArrow?: boolean;
+  ax?: number;
+  ay?: number;
 }
 
 export interface SeriesOverrideConfig {
@@ -66,6 +69,7 @@ export type TypographyPreset = 'default' | 'nejm' | 'nature' | 'jama';
 export interface StudySchemaData {
   studyPhase?: string;
   studyDesign?: string;
+  screenedCount?: number;
   totalEnrolled?: number;
   randomizationRatio?: string;
   consortOrientation?: ConsortOrientation;

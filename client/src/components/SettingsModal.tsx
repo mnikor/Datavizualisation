@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { X, AlertTriangle, Plus, Trash2 } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { X, AlertTriangle, Plus, Trash2, Crosshair } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,7 @@ interface SettingsModalProps {
   chart: any;
   onClose: () => void;
   onSave: (settings: any) => void;
+  lastChartClick?: { x: number; y: number } | null;
 }
 
 const CHART_TYPES = [

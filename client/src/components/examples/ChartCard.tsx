@@ -35,6 +35,7 @@ export default function ChartCardExample() {
       onSettings={() => console.log('Settings clicked')}
       onDelete={() => console.log('Delete clicked')}
       onExport={() => console.log('Export clicked')}
+      onFullView={() => console.log('Full view clicked')}
     />
   );
 }

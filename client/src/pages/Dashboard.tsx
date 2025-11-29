@@ -190,6 +190,7 @@ export default function Dashboard() {
   const [uploadStage, setUploadStage] = useState<'idle' | 'uploading' | 'analyzing' | 'finishing' | 'error'>('idle');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [lastChartClick, setLastChartClick] = useState<{ x: number; y: number } | null>(null);
   const { toast } = useToast();
 
   const resetUploadUI = () => {
@@ -297,6 +298,14 @@ export default function Dashboard() {
     setShowUploadModal(false);
     resetUploadUI();
     uploadMutation.reset();
+  };
+
+  const handleSubmitUpload = (data: { file: File; chartType: string; description: string }) => {
+    const formData = new FormData();
+    formData.append('document', data.file);
+    formData.append('chartType', data.chartType);
+    formData.append('description', data.description);
+    uploadMutation.mutate(formData);
   };
 
   const uploadIsProcessing = uploadStage === 'uploading' || uploadStage === 'analyzing' || uploadStage === 'finishing';
@@ -600,6 +609,13 @@ export default function Dashboard() {
     }
   };
 
+  const handleChartClick = (data: any) => {
+    if (data?.points?.[0]) {
+      const point = data.points[0];
+      setLastChartClick({ x: point.x, y: point.y });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
@@ -738,65 +754,59 @@ export default function Dashboard() {
           </div>
         </div>
 
-        const [lastChartClick, setLastChartClick] = useState<{ x: number; y: number } | null>(null);
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2" data-testid="grid-charts">
+          {charts.map((chart) => (
+            <div key={chart.id} className={chart.type === 'study-schema' ? 'md:col-span-2' : ''}>
+              <ChartCard
+                chart={chart}
+                onSettings={() => setEditingChart(chart)}
+                onDelete={() => deleteChart(chart.id)}
+                onExport={() => exportChart(chart)}
+                onFullView={() => setFullViewChart(chart)}
+                onChartClick={handleChartClick}
+              />
+            </div>
+          ))}
+        </section>
 
-  const handleChartClick = (data: any) => {
-    if (data?.points?.[0]) {
-      const point = data.points[0];
-        // Prefer x/y from point, fallback to other properties if needed
-        // For categorical axes, x might be a string. For annotations, we usually need coordinates.
-        // If x is a category, we might need the index or the string itself depending on axis type.
-        // Plotly annotations work with data coordinates by default.
-        setLastChartClick({x: point.x, y: point.y });
-    }
-  };
+        {charts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No charts yet. Upload a document to get started.</p>
+          </div>
+        )}
+      </main>
 
-        return (
-        <div className="min-h-screen bg-background">
-          {/* ... header ... */}
+      {showUploadModal && (
+        <UploadModal
+          onClose={handleCloseUploadModal}
+          onUpload={handleSubmitUpload}
+          isProcessing={uploadMutation.isPending}
+          stage={uploadStage}
+          progress={uploadProgress}
+          errorMessage={uploadError}
+        />
+      )}
 
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* ... toolbar ... */}
+      {editingChart && (
+        <SettingsModal
+          chart={editingChart}
+          onClose={() => setEditingChart(null)}
+          onSave={(settings) => updateChart(editingChart.id, settings)}
+          lastChartClick={lastChartClick}
+        />
+      )}
 
-            <section className="grid grid-cols-1 gap-6 md:grid-cols-2" data-testid="grid-charts">
-              {charts.map((chart) => (
-                <div key={chart.id} className={chart.type === 'study-schema' ? 'md:col-span-2' : ''}>
-                  <ChartCard
-                    chart={chart}
-                    onSettings={() => setEditingChart(chart)}
-                    onDelete={() => deleteChart(chart.id)}
-                    onExport={() => exportChart(chart)}
-                    onFullView={() => setFullViewChart(chart)}
-                    onChartClick={handleChartClick}
-                  />
-                </div>
-              ))}
-            </section>
-
-            {/* ... empty state ... */}
-          </main>
-
-          {/* ... modals ... */}
-
-          {editingChart && (
-            <SettingsModal
-              chart={editingChart}
-              onClose={() => setEditingChart(null)}
-              onSave={(settings) => updateChart(editingChart.id, settings)}
-              lastChartClick={lastChartClick}
-            />
-          )}
-          {fullViewChart && (
-            <FullScreenChartModal
-              chart={fullViewChart}
-              onClose={() => setFullViewChart(null)}
-              onExport={async () => {
-                await exportChart(fullViewChart);
-              }}
-              includeInsights={includeInsights}
-              onToggleInsights={setIncludeInsights}
-            />
-          )}
-        </div>
-        );
+      {fullViewChart && (
+        <FullScreenChartModal
+          chart={fullViewChart}
+          onClose={() => setFullViewChart(null)}
+          onExport={async () => {
+            await exportChart(fullViewChart);
+          }}
+          includeInsights={includeInsights}
+          onToggleInsights={setIncludeInsights}
+        />
+      )}
+    </div>
+  );
 }
