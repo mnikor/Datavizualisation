@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.env
+.DS_Store
+attached_assets
+*.log
+coverage
+.replit
+replit.nix

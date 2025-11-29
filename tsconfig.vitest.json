@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "vitest/importMeta", "node"],
+    "allowJs": true
+  },
+  "include": ["client/src/**/*", "shared/**/*", "server/**/*"],
+  "exclude": []
+}
